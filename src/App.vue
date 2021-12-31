@@ -1,6 +1,6 @@
 <template>
   <PlayerComp />
-  <PlayList />
+  <!-- <PlayList /> -->
 </template>
 
 <script>
