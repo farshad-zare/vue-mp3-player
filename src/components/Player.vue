@@ -55,13 +55,10 @@
       },
 
       getPlayedTime() {
-        if (this.sound.playing()) {
-          this.playedTime = this.sound.seek();
+        this.playedTime = this.sound.seek();
 
-          this.playedTimedString = this.convertSecsToMinsSecs(this.playedTime);
-          this.playedPercent =
-            100 - (this.playedTime / this.songDuration) * 100;
-        }
+        this.playedTimedString = this.convertSecsToMinsSecs(this.playedTime);
+        this.playedPercent = 100 - (this.playedTime / this.songDuration) * 100;
       },
 
       handleSeek(event) {
@@ -170,7 +167,7 @@
     width: 100%;
     height: 10px;
 
-    background-color: rgb(130, 130, 240);
+    background-color: rgb(167, 245, 180);
 
     border-radius: 5px;
 
@@ -181,7 +178,7 @@
     width: 100%;
     height: 10px;
 
-    background-color: rgb(6, 6, 248);
+    background-color: rgb(4, 153, 49);
     border-radius: 5px;
 
     pointer-events: none;
