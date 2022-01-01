@@ -16,7 +16,7 @@
         <span class="time-sepretor">/</span>
         <span class="time-left">{{ songDurationString }}</span>
       </div>
-      <div class="player-seekbar">
+      <div class="player-seekbar" @click="handleSeek">
         <div class="seekbar-left"></div>
         <div
           class="seekbar-passed"
@@ -48,15 +48,29 @@
     },
 
     methods: {
+      convertSecsToMinsSecs(duration) {
+        const mins = parseInt(duration / 60);
+        const secs = Math.floor(duration % 60);
+        return `${mins}:${secs}`;
+      },
+
       getPlayedTime() {
         if (this.sound.playing()) {
           this.playedTime = this.sound.seek();
-          const soundMins = parseInt(this.playedTime / 60);
-          const soundSeconds = Math.floor(this.playedTime % 60);
-          this.playedTimedString = `${soundMins}:${soundSeconds}`;
+
+          this.playedTimedString = this.convertSecsToMinsSecs(this.playedTime);
           this.playedPercent =
             100 - (this.playedTime / this.songDuration) * 100;
         }
+      },
+
+      handleSeek(event) {
+        const elementWidth = event.target.offsetWidth;
+        const clickedPos = event.offsetX;
+        const percentToSeek = (clickedPos / elementWidth) * 100;
+        const seekTime = (this.songDuration * percentToSeek) / 100;
+        this.sound.seek(seekTime);
+        this.getPlayedTime();
       },
 
       startPlayer() {
@@ -67,14 +81,15 @@
             src: [this.mp3Url],
             html5: true,
             volume: 0.5,
+            preload: "metadata",
           });
 
           this.sound.on("load", () => {
             this.songDuration = this.sound.duration();
-            const soundMins = parseInt(this.songDuration / 60);
-            const soundSeconds = Math.floor(this.songDuration % 60);
 
-            this.songDurationString = `${soundMins}:${soundSeconds}`;
+            this.songDurationString = this.convertSecsToMinsSecs(
+              this.songDuration
+            );
           });
 
           this.sound.on("play", () => {
@@ -147,6 +162,8 @@
     width: 100%;
     height: 10px;
     border-radius: 5px;
+
+    cursor: pointer;
   }
   .seekbar-left {
     position: absolute;
@@ -156,6 +173,8 @@
     background-color: rgb(130, 130, 240);
 
     border-radius: 5px;
+
+    pointer-events: none;
   }
   .seekbar-passed {
     position: absolute;
@@ -164,5 +183,7 @@
 
     background-color: rgb(6, 6, 248);
     border-radius: 5px;
+
+    pointer-events: none;
   }
 </style>
