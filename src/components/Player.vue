@@ -2,11 +2,15 @@
   <div class="player">
     <h3 class="player_title">player</h3>
     <div class="play-pause">
-      <button v-if="isPlaying" class="play-pause_button" @click="pausePlayer">
+      <button
+        v-if="isPlaying"
+        class="play-pause_button"
+        @click="pausePlayer(playedFile)"
+      >
         <img class="play-pause_img" src="../assets/pause-circle.svg" />
       </button>
 
-      <button v-else class="play-pause_button" @click="startPlayer">
+      <button v-else class="play-pause_button" @click="playPlayer">
         <img class="play-pause_img" src="../assets/play-circle.svg" />
       </button>
     </div>
@@ -22,6 +26,9 @@
           class="seekbar-passed"
           :style="`left:${-this.playedPercent}%`"
         ></div>
+      </div>
+      <div class="file-input">
+        <input @change="handelChangeFile" type="file" />
       </div>
     </div>
   </div>
@@ -44,6 +51,8 @@
         playedTimedString: "--",
         playedPercent: 100,
         getPlayedTimeinterval: null,
+        playList: [],
+        playingFile: 0,
       };
     },
 
@@ -71,44 +80,66 @@
       },
 
       startPlayer() {
-        this.isPlaying = true;
+        this.sound = new Howl({
+          src: [this.playList[this.playingFile]],
+          html5: true,
+          volume: 0.5,
+          preload: "metadata",
+        });
 
-        if (!this.sound) {
-          this.sound = new Howl({
-            src: [this.mp3Url],
-            html5: true,
-            volume: 0.5,
-            preload: "metadata",
-          });
+        this.sound.on("load", () => {
+          this.songDuration = this.sound.duration();
+          this.songDurationString = this.convertSecsToMinsSecs(
+            this.songDuration
+          );
+        });
 
-          this.sound.on("load", () => {
-            this.songDuration = this.sound.duration();
+        this.sound.on("play", () => {
+          this.getPlayedTimeinterval = setInterval(this.getPlayedTime, 500);
+        });
 
-            this.songDurationString = this.convertSecsToMinsSecs(
-              this.songDuration
-            );
-          });
+        this.sound.on("pause", () => {
+          clearInterval(this.getPlayedTimeinterval);
+        });
 
-          this.sound.on("play", () => {
-            this.getPlayedTimeinterval = setInterval(this.getPlayedTime, 500);
-          });
-
-          this.sound.on("pause", () => {
-            clearInterval(this.getPlayedTimeinterval);
-          });
-
-          this.sound.on("end", () => {
-            clearInterval(this.getPlayedTimeinterval);
-            this.isPlaying = false;
-          });
-        }
-
-        this.sound.play();
+        this.sound.on("end", () => {
+          clearInterval(this.getPlayedTimeinterval);
+          this.isPlaying = false;
+          this.playingFile += 1;
+          if (this.playList.length > this.playingFile) {
+            this.startPlayer();
+            this.playPlayer();
+          }
+        });
       },
 
       pausePlayer() {
         this.sound.pause();
         this.isPlaying = false;
+      },
+
+      playPlayer() {
+        this.sound.play();
+        this.isPlaying = true;
+      },
+
+      handelChangeFile(event) {
+        if (event.target.files.length > 0) {
+          var file = event.target.files[0];
+          var reader = new FileReader();
+          reader.addEventListener("load", () => {
+            const mp3File = reader.result;
+            this.playList = [...this.playList, mp3File];
+
+            if (this.isPlaying) {
+              return;
+            } else {
+              this.startPlayer();
+              this.playPlayer();
+            }
+          });
+          reader.readAsDataURL(file);
+        }
       },
     },
   };
@@ -182,5 +213,9 @@
     border-radius: 5px;
 
     pointer-events: none;
+  }
+
+  .file-input {
+    margin-top: 10px;
   }
 </style>
