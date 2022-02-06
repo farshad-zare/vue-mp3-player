@@ -28,7 +28,7 @@
         ></div>
       </div>
       <div class="file-input">
-        <input @change="handelChangeFile" type="file" />
+        <input multiple @change="handelChangeFile" type="file" />
       </div>
     </div>
   </div>
@@ -119,26 +119,25 @@
       },
 
       playPlayer() {
+        if (!this.sound) {
+          this.startPlayer();
+        }
         this.sound.play();
         this.isPlaying = true;
       },
 
       handelChangeFile(event) {
         if (event.target.files.length > 0) {
-          var file = event.target.files[0];
-          var reader = new FileReader();
-          reader.addEventListener("load", () => {
-            const mp3File = reader.result;
-            this.playList = [...this.playList, mp3File];
-
-            if (this.isPlaying) {
-              return;
-            } else {
-              this.startPlayer();
-              this.playPlayer();
-            }
-          });
-          reader.readAsDataURL(file);
+          const files = event.target.files;
+          for (let i = 0; i < files.length; i++) {
+            const reader = new FileReader();
+            reader.addEventListener("load", () => {
+              const mp3File = reader.result;
+              this.playList = [...this.playList, mp3File];
+            });
+            reader.readAsDataURL(files[i]);
+            console.log(this.playList);
+          }
         }
       },
     },
