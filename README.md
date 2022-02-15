@@ -1,6 +1,7 @@
 ## Simple Mp3 Player
 
 very simple Mp3 Player written with Vue, and using HowlerJS
+### [preview](https://simple-mp3-player.netlify.app)
 
 ### Vue 3 + Vite
 
